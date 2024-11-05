@@ -1,0 +1,14 @@
+.root {
+  width: 100%;
+}
+
+.table {
+  margin-top: 40px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.no-data {
+  margin-top: 40px;
+  text-align: center;
+}

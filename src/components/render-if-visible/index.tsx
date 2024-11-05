@@ -17,7 +17,7 @@ const RenderIfVisible: React.FC<Props> = ({
 }) => {
   const [isVisible, setIsVisible] = useState<boolean>(isServer)
   const placeholderHeight = useRef<number>(defaultHeight)
-  const intersectionRef = useRef<HTMLDivElement>()
+  const intersectionRef = useRef<HTMLTableRowElement>(null)
 
   // Set visibility with intersection observer
   useEffect(() => {

@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from "react";
-import JSONRendererEditor from "./components/json-render-editor";
-import data from "./assets/mock-data/data.json";
-import { JsonItem } from "./types";
+import data from 'assets/mock-data/data.json'
+import JSONRendererEditor from 'components/json-render-editor'
+import React, { useEffect, useState } from 'react'
+import { JsonItem } from 'types'
+
+import s from './App.module.css'
 
 const App: React.FC = () => {
-  const [jsonData, setJsonData] = useState<JsonItem[]>([]);
+  const [jsonData, setJsonData] = useState<JsonItem[]>([])
 
   useEffect(() => {
-    setJsonData(data as JsonItem[]); // Type assertion for JSON import
-  }, []);
+    setJsonData(data as JsonItem[])
+  }, [])
 
   return (
-    <div>
-      <h1>JSON Renderer and Editor</h1>
+    <div className={s.root}>
+      <h1>JSON Editor</h1>
       <JSONRendererEditor data={jsonData} setData={setJsonData} />
     </div>
-  );
-};
+  )
+}
 
-export default App;
+export default App

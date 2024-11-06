@@ -1,9 +1,10 @@
-import RenderIfVisible from 'components/render-if-visible'
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
+import AutoSizer from 'react-virtualized-auto-sizer'
+import { FixedSizeList as List } from 'react-window'
 import { JsonItem } from 'types'
 import { useDebounce } from 'use-debounce'
 
-import { InputField } from './input-field'
+import { Row } from './row'
 import s from './styles.module.css'
 
 interface JSONRendererEditorProps {
@@ -20,11 +21,14 @@ const JSONRendererEditor: React.FC<JSONRendererEditorProps> = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [debouncedFilteredText] = useDebounce(filterText, 500)
 
-  const handleInputChange = (id: string, key: keyof JsonItem, value: any) => {
-    setData(
-      data.map((item) => (item.id === id ? { ...item, [key]: value } : item))
-    )
-  }
+  const handleInputChange = useCallback(
+    (id: string, key: keyof JsonItem, value: any) => {
+      setData(
+        data.map((item) => (item.id === id ? { ...item, [key]: value } : item))
+      )
+    },
+    [data, setData]
+  )
 
   const filteredData = useMemo(
     () =>
@@ -53,29 +57,17 @@ const JSONRendererEditor: React.FC<JSONRendererEditorProps> = ({
     [filteredData, sortKey, sortOrder]
   )
 
-  const renderRow = (item: JsonItem, style: React.CSSProperties) => (
-    <RenderIfVisible key={item.id} defaultHeight={50}>
-      {Object.entries(item).map(([key, value]) => (
-        <td key={key} style={style}>
-          <InputField
-            keyCode={key}
-            itemId={item.id}
-            value={value}
-            onChange={handleInputChange}
-          />
-        </td>
-      ))}
-    </RenderIfVisible>
+  const handleSort = useCallback(
+    (key: keyof JsonItem) => {
+      if (sortKey === key) {
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+      } else {
+        setSortKey(key)
+        setSortOrder('asc')
+      }
+    },
+    [sortKey, sortOrder]
   )
-
-  const handleSort = (key: keyof JsonItem) => {
-    if (sortKey === key) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortKey(key)
-      setSortOrder('asc')
-    }
-  }
 
   return (
     <div className={s.root}>
@@ -85,23 +77,45 @@ const JSONRendererEditor: React.FC<JSONRendererEditorProps> = ({
         value={filterText}
         onChange={(e) => setFilterText(e.target.value)}
       />
-      <table className={s.table}>
-        <thead>
-          <tr>
-            {data.length > 0 &&
-              Object.keys(data[0]).map((key) => (
-                <th key={key} onClick={() => handleSort(key as keyof JsonItem)}>
-                  {key}{' '}
-                  {sortKey === key ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
-                </th>
-              ))}
-          </tr>
-        </thead>
-        <tbody>
-          {!!sortedData.length && sortedData.map((item) => renderRow(item, {}))}
-        </tbody>
-      </table>
-      {!sortedData.length && <div className={s['no-data']}>Нет данных</div>}
+      <div style={{ height: '100%', width: '100%' }}>
+        <AutoSizer>
+          {({ height, width }) => (
+            <div style={{ height, width }}>
+              <table className={s.table}>
+                <thead>
+                  <tr>
+                    {data.length > 0 &&
+                      Object.keys(data[0]).map((key) => (
+                        <th
+                          key={key}
+                          onClick={() => handleSort(key as keyof JsonItem)}
+                        >
+                          {key}{' '}
+                          {sortKey === key
+                            ? sortOrder === 'asc'
+                              ? '↑'
+                              : '↓'
+                            : ''}
+                        </th>
+                      ))}
+                  </tr>
+                </thead>
+              </table>
+              <List
+                height={300}
+                itemCount={sortedData.length}
+                itemSize={50}
+                width={width}
+                itemData={sortedData}
+              >
+                {({ index, data }) => (
+                  <Row data={data[index]} onChange={handleInputChange} />
+                )}
+              </List>
+            </div>
+          )}
+        </AutoSizer>
+      </div>
     </div>
   )
 }

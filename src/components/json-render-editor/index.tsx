@@ -1,10 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import { FixedSizeList as List } from 'react-window'
 import { JsonItem } from 'types'
 import { useDebounce } from 'use-debounce'
+import { Table } from './table'
 
-import { Row } from './row'
 import s from './styles.module.css'
 
 interface JSONRendererEditorProps {
@@ -80,39 +79,16 @@ const JSONRendererEditor: React.FC<JSONRendererEditorProps> = ({
       <div style={{ height: '100%', width: '100%' }}>
         <AutoSizer>
           {({ height, width }) => (
-            <div style={{ height, width }}>
-              <table className={s.table}>
-                <thead>
-                  <tr>
-                    {data.length > 0 &&
-                      Object.keys(data[0]).map((key) => (
-                        <th
-                          key={key}
-                          onClick={() => handleSort(key as keyof JsonItem)}
-                        >
-                          {key}{' '}
-                          {sortKey === key
-                            ? sortOrder === 'asc'
-                              ? '↑'
-                              : '↓'
-                            : ''}
-                        </th>
-                      ))}
-                  </tr>
-                </thead>
-              </table>
-              <List
-                height={300}
-                itemCount={sortedData.length}
-                itemSize={50}
-                width={width}
-                itemData={sortedData}
-              >
-                {({ index, data }) => (
-                  <Row data={data[index]} onChange={handleInputChange} />
-                )}
-              </List>
-            </div>
+            <Table
+              width={width}
+              height={height}
+              data={sortedData}
+              titles={Object.keys(data[0])}
+              onSort={handleSort}
+              onInputChange={handleInputChange}
+              sortKey={sortKey}
+              sortOrder={sortOrder}
+            />
           )}
         </AutoSizer>
       </div>
